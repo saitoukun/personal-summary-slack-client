@@ -30,14 +30,15 @@ get_default_date() {
 
 # Main function
 main() {
-  local before_date after_date user
+  local before_date after_date user direction
 
   # Parse arguments
-  while getopts "b:a:u:" opt; do
+  while getopts "b:a:u:d:" opt; do
     case $opt in
       b) before_date="$OPTARG" ;;
       a) after_date="$OPTARG" ;;
       u) user="$OPTARG" ;;
+      d) direction="$OPTARG" ;;
       *) err "Invalid option -$OPTARG"; exit 1 ;;
     esac
   done
@@ -46,6 +47,7 @@ main() {
   before_date=${before_date:-$(get_default_date 0)}
   after_date=${after_date:-$(get_default_date $DEFAULT_DAYS_AGO)}
   user=${user:-$DEFAULT_USER}
+  direction=${direction:-"from"}
 
   # Adjust dates
   local adjust_before_date adjust_after_date
@@ -55,8 +57,16 @@ main() {
   # Construct URL
   local url_base query url
   url_base="https://slack.com/api/search.messages?"
-  query="query=from%3A%40${user}%20before%3A${adjust_before_date}%20after%3A${adjust_after_date}"
-  url="${url_base}${query}&sort=timestamp&pretty=1&page=2"
+  
+  # Set query based on direction
+  if [[ "$direction" == "to" ]]; then
+    query="query=to%3A%40${user}%20before%3A${adjust_before_date}%20after%3A${adjust_after_date}"
+  else
+    query="query=from%3A%40${user}%20before%3A${adjust_before_date}%20after%3A${adjust_after_date}"
+  fi
+  
+  # max count is 100
+  url="${url_base}${query}&sort=timestamp&pretty=1&page=1&count=100"
 
   # Validate token
   if [[ -z "$SLACK_USER_TOKEN" ]]; then
