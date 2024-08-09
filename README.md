@@ -74,7 +74,7 @@ sequenceDiagram
     Note right of Client: from, to
     Slack ->> Client: messages
 		Client ->> OpenAI API: ask
-		OpenAI API ->> Client: res
-    Note over Client: memo
-    Client ->> stdout: resutl
+		OpenAI API ->> Client: response
+    Client ->> stdout: result
+
 ```
